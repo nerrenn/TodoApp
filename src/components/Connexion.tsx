@@ -1,11 +1,10 @@
 import { useStore } from "@nanostores/react"
-import { Navigate } from "react-router"
-import { Link } from "react-router-dom"
-import { changeEmail, changePassword, subscribe, UserStore } from "../stores/UserStore"
+import { Link, Navigate } from "react-router-dom"
+import { changeEmail, changePassword, connexion, subscribe, UserStore} from "../stores/UserStore"
 import { Container, InputContainer, LogoNotValid, LogoValid, SubButton, TextInput, TitleSub } from "../styles/Subscription.style"
 
 /**
- * Composant de l'écran d'inscription
+ * Composant de l'écran de connexion
  */
 export default function Subscription() {
     const {email, password, isPasswordValid, isEmailValid, isSending, error, user} = useStore(UserStore)
@@ -16,7 +15,7 @@ export default function Subscription() {
 
     return(
         <Container>
-            <TitleSub>Inscription</TitleSub>
+            <TitleSub>Connexion</TitleSub>
             <InputContainer>
                 <TextInput type="email" value={email} onChange={changeEmail}></TextInput>
                 {isEmailValid === null ? null : isEmailValid ? (
@@ -37,10 +36,10 @@ export default function Subscription() {
             {isSending ? ( <p>Chargement</p> ) : 
             (
                 <>
-                <SubButton onClick={subscribe}>S'inscrire</SubButton> 
+                <SubButton onClick={connexion}>Envoyer</SubButton> 
                 </>
             )}
-            <Link to="/connexion">Vous avez déjà un compte ?<br/> Connectez-vous</Link>
+            <Link to="/Subscription">Vous n'avez pas de compte<br/> Inscrivez-vous</Link>
         </Container>
     )
 }

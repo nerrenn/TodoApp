@@ -4,9 +4,15 @@ import { createGlobalStyle } from "styled-components";
  * Style Global de l'application
  */
 
-    export const AppTheme = {
+    export const Theme = {
         color: {
-            white: '#FFF'
+            coldWhite: '#EDFFFB',
+            softBlack: '#4F4F4F',
+            greenocean: '#075252',
+            green: '#557859',
+            deepBlue:'#264F4A',
+            white:'#EFEFEF',
+            grey:'#d0cece'
         }
     }
 
@@ -14,12 +20,13 @@ export const AppGlobalStyle = createGlobalStyle`
     :root{
         font-size: 18px;
         font-family: 'Poppins', sans-serif;
+        color:${Theme.color.softBlack};
+        background-color: ${Theme.color.coldWhite};
     }
     
     html, body, #root{
         display: flex;
         flex-direction: column;
-        align-items: center;
         min-height: 100vh;
         min-width: 100vw;
         margin: 0;
