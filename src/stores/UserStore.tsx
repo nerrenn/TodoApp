@@ -1,6 +1,7 @@
+import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from "@firebase/auth"
 import { action, map } from "nanostores"
 import { ChangeEvent } from "react"
-import { createAccount } from "../lib/Auth"
+import { firebaseAuth } from "../lib/Firebase"
 
 /**
  * @module Subscribe.store
@@ -16,31 +17,31 @@ import { createAccount } from "../lib/Auth"
  * screen
  */
 
-export type Users = {
+export type User = {
     uid:string
     email:string | null
-    password: string
+
 }
 
-export type SubscribeState= {
+export type userStore= {
     email:string
     password: string
     isEmailValid: boolean | null
     isPasswordValid: boolean | null
-    isEmailAlreadyExist: boolean
-    userList: Users[]
+    isSending: boolean
+    user?: User
+    error?: string
 }
 
 /**
  * Store containing the subscribe state
  */
-export const SubscribeStore = map<SubscribeState>({
+export const UserStore = map<userStore>({
     email: '',
     password: '',
     isPasswordValid: null,
     isEmailValid: null,
-    isEmailAlreadyExist: false,
-    userList:[]
+    isSending: false,
   })
 
   /**
@@ -48,7 +49,7 @@ export const SubscribeStore = map<SubscribeState>({
  */
 export const changeEmail = action(
     // Store on wich we want to execute the action
-    SubscribeStore,
+    UserStore,
     // Name if the action used for debugging
     'change email',
     // Function of the action ! This one is the code
@@ -65,7 +66,7 @@ export const changeEmail = action(
    * Action allowing to change the password
    */
   export const changePassword = action(
-    SubscribeStore,
+    UserStore,
     'change password',
     (store, e: ChangeEvent<HTMLInputElement>) => {
       // We can change a box content
@@ -78,7 +79,7 @@ export const changeEmail = action(
   /**
    * Action that validates the email of the store
    */
-  export const validateEmail = action(SubscribeStore, 'validate email', store => {
+  export const validateEmail = action(UserStore, 'validate email', store => {
     // Retrieve the email in the store
     const { email } = store.get()
   
@@ -101,7 +102,7 @@ export const changeEmail = action(
    * Action permettant de valider le mot de passe
    */
   export const validatePassword = action(
-    SubscribeStore,
+    UserStore,
     'validate password',
     store => {
       // Retrieve the password in the store
@@ -123,33 +124,59 @@ export const changeEmail = action(
     },
   )
 
+  
+  export const subscribe = action(UserStore, 'subscribe', async store => {
+    const { email, password, isEmailValid, isPasswordValid, isSending} = store.get()
 
-  export const SubscribeButton = action(
-    SubscribeStore,
-    'Create an account',
-    async (store) => {
-        const {email, password, isEmailValid, isPasswordValid, userList} = store.get()
-        store.setKey('isEmailAlreadyExist', false)
-    
-        userList.map((user, index) => {
-            console.log(user.email)
-            if(user.email === email){
-                store.setKey('isEmailAlreadyExist', true)
-            }
-        })
-        const {isEmailAlreadyExist} = store.get()
-
-        if(isPasswordValid && isEmailValid){
-            if(!isEmailAlreadyExist)
-            {
-            const accountCreated = await createAccount(email, password)
-            const newUser:Users = {uid: accountCreated.uid, email: email, password: password}
-            const newUserList = [newUser, ...userList]
-            
-            store.setKey('userList', newUserList)             
-            }
-            return
-        }
-        return
+    if(!isEmailValid || !isPasswordValid || isSending){
+      return
     }
-  )
+
+    store.setKey('isSending', true)
+
+    try{
+      const result = await createUserWithEmailAndPassword(firebaseAuth, email, password)
+
+      store.setKey('isSending', false)
+      store.setKey('user', result.user)
+    }
+    catch (e: any) {
+      if (e.code === 'auth/email-already-in-use') {
+        store.setKey('error', 'Email dèjà enregistré')
+      } else {
+        store.setKey('error', 'Une erreur est survenue :/. Réessayer plus tard')
+      }
+
+    store.setKey('isSending', false)
+  }
+
+})
+
+export const connexion = action(UserStore, 'connexion', async (store) => {
+  const { email, password, isEmailValid, isPasswordValid, isSending} = store.get()
+
+  if(!isEmailValid || !isPasswordValid || isSending){
+    return
+  }
+
+  store.setKey('isSending', true)
+
+  try{
+    const result = await signInWithEmailAndPassword(firebaseAuth, email, password)
+
+    store.setKey('isSending', false)
+    store.setKey('user', result.user)
+  }
+  catch (e: any) {
+    if (e.code === 'auth/user-not-found') {
+      store.setKey('error', 'Addresse email introuvable !')
+    } else if(e.code === 'auth/wrong-password'){
+      store.setKey('error', 'Mot de passe invalide !')
+    }else {
+      store.setKey('error', 'Une erreur est survenue :/. Réessayer plus tard')
+    }
+
+  store.setKey('isSending', false)
+}
+
+})
