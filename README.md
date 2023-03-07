@@ -7,3 +7,4 @@ react-router: pour la gestion des routes de l'application
 nanostores: pour la gestion des états et des actions
 firebase: pour la gestion des base de données (backend)
 vite: pour le developpement en temps réel de l'application
+styled-components: pour styliser les composants

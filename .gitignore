@@ -22,3 +22,6 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+Connexion.tsx
+Connexion.stores.tsx
